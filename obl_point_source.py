@@ -61,6 +61,7 @@ def generate_obl_point_source_scat_figure(k, a, x0, z0, xi1, alpha, w, nels, pat
     plt.ylabel('z (m)')
     plt.title(f'Point Source Scattering (xi1={xi1})')
     
+    plt.savefig("obl_point_source.png")
     plt.show()
 
 def obl_point_source_scat_hard(k, a, eta0, xi0, path, xi1, x, y, z):
@@ -211,8 +212,8 @@ def obl_calculate_sum(k, a, path, x, y, z, obl_calculate_term):
                 everything = obl_open_everything(path, c, m, n)
                 
                 # Reconstruct complex radial functions
-                everything.R.R3 = everything.R.R1 + 1j * everything.R.R2
-                everything.R.R3p = everything.R.R1p + 1j * everything.R.R2p
+                everything.R.R3 = everything.R.R1 + 1j*everything.R.R2
+                everything.R.R3p = everything.R.R1p + 1j*everything.R.R2p
                 
                 everything.S1.S1_idxs = np.isfinite(everything.S1.S1)
                 everything.S1.S1p_idxs = np.isfinite(everything.S1.S1p)
@@ -295,4 +296,5 @@ def point_source_in(k, px, py, pz, x, y, z):
     return v_in, grad_in_cart
 
 if __name__ == "__main__":
-    generate_obl_point_source_scat_figure(10.0, 1.0, 0.0, 3.0, 0.0, 'hard', 5.0, 200)
+    generate_obl_point_source_scat_figure(10.0, 1.0, 0.0, 3.0, 0.0, 'hard', 5.0, 200, path='spheroidal/saved')
+    #generate_obl_point_source_scat_figure(10.0, 1.0, 0.0, 3.0, 0.0, 'hard', 5.0, 200, path='saved')

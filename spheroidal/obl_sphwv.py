@@ -8,7 +8,7 @@ import math
 import scipy.io as sio
 
 def obl_calculate_everything(path, max_memory, precision, c, m, n, 
-                             eta_min, eta_max, n_eta, xi_min, xi_max, n_xi, p,
+                             d_theta_pi, z_max, d_z, p,
                              n_dr, log10_dr_min, n_dr_neg, log10_dr_neg_min, 
                              n_c2k, log10_c2k_min, n_B2r, log10_B2r_min):
     """
@@ -45,8 +45,6 @@ def obl_calculate_everything(path, max_memory, precision, c, m, n,
         "-B2r_min", f"1.0e{log10_B2r_min}"
     ]
 
-    print(f"Executing: {' '.join(command_coeff)}")
-
     # Run the system commands
     try:
         # check=True will raise an exception if the return code is non-zero
@@ -58,7 +56,6 @@ def obl_calculate_everything(path, max_memory, precision, c, m, n,
     
     print('calculating S1...')
     
-    deta = (eta_max - eta_min)/n_eta
     command_S1 = [
         executable,
         "-max_memory", str(max_memory),
@@ -68,14 +65,12 @@ def obl_calculate_everything(path, max_memory, precision, c, m, n,
         "-m", str(m),
         "-n", str(n),
         "-w", "S1",
-        "-a", nice_number(eta_min, 20),
-        "-b", nice_number(eta_max, 20),
-        "-d", nice_number(deta, 20),
-        "-arg_type", "eta",
+        "-a", nice_number(0.0, 20),
+        "-b", nice_number(1.0, 20),
+        "-d", nice_number(d_theta_pi, 20),
+        "-arg_type", "theta/pi",
         "-p", str(p)
     ]
-    
-    print(f"Executing: {' '.join(command_S1)}")
 
     # Run the system commands
     try:
@@ -89,7 +84,6 @@ def obl_calculate_everything(path, max_memory, precision, c, m, n,
     
     print('calculating R...')
     
-    dxi = (xi_max - xi_min)/n_xi
     command_R = [
         executable,
         "-max_memory", str(max_memory),
@@ -99,15 +93,13 @@ def obl_calculate_everything(path, max_memory, precision, c, m, n,
         "-m", str(m),
         "-n", str(n),
         "-w", "R",
-        "-a", nice_number(xi_min, 20),
-        "-b", nice_number(xi_max, 20),
-        "-d", nice_number(dxi, 20),
-        "-arg_type", "xi",
+        "-a", nice_number(0.0, 20),
+        "-b", nice_number(z_max, 20),
+        "-d", nice_number(d_z, 20),
+        "-arg_type", "z",
         "-which", "R1_1,R1_2,R2_1,R2_2,R2_31,R2_32",
         "-p", str(p)
     ]
-    
-    print(f"Executing: {' '.join(command_R)}")
 
     # Run the system commands
     try:
@@ -143,9 +135,9 @@ def obl_calculate_everything(path, max_memory, precision, c, m, n,
                 print(f"Warning: Expected file {fname} not found.")
 
     # Cleanup: Delete the .txt files after zipping
-    #for suffix in suffixes:
-    #    fname = f'data/obl_{base_name}_{suffix}.txt'
-    #    os.remove(fname)
+    for suffix in suffixes:
+        fname = f'data/obl_{base_name}_{suffix}.txt'
+        os.remove(fname)
     
     print(f"Successfully zipped coefficients to {zip_filename}")
 
@@ -294,45 +286,79 @@ def obl_load_everything_R(filename):
     """
     R = SimpleNamespace()
     temp = np.loadtxt(filename, delimiter=',').T
-    
-    # Map data
+
     R.xi = temp[1, :]
-    R.R1_1, R.R1p_1 = temp[2, :], temp[3, :]
-    R.R1_2, R.R1p_2 = temp[4, :], temp[5, :]
+    R.R1_1 = temp[2, :]
+    R.R1p_1 = temp[3, :]
+    R.R1_2 = temp[4, :]
+    R.R1p_2 = temp[5, :]
+    R.R1_log_abs_difference = temp[6, :]
+    R.R1p_log_abs_difference = temp[7, :]
+    R.R2_1 = temp[8, :]
+    R.R2p_1 = temp[9, :]
+    R.R2_2 = temp[10, :]
+    R.R2p_2 = temp[11, :]
+    R.R2_31 = temp[12, :]
+    R.R2p_31 = temp[13, :]
+    R.R2_32 = temp[14, :]
+    R.R2p_32 = temp[15, :]
+    R.R2_log_abs_difference_1_2 = temp[16, :]
+    R.R2p_log_abs_difference_1_2 = temp[17, :]
+    R.R2_log_abs_difference_1_31 = temp[18, :]
+    R.R2p_log_abs_difference_1_31 = temp[19, :]
+    R.R2_log_abs_difference_1_32 = temp[20, :]
+    R.R2p_log_abs_difference_1_32 = temp[21, :]
+    R.R2_log_abs_difference_2_31 = temp[22, :]
+    R.R2p_log_abs_difference_2_31 = temp[23, :]
+    R.R2_log_abs_difference_2_32 = temp[24, :]
+    R.R2p_log_abs_difference_2_32 = temp[25, :]
+    R.R2_log_abs_difference_31_32 = temp[26, :]
+    R.R2p_log_abs_difference_31_32 = temp[27, :]
+    R.W = temp[28, :]
+    R.log_W = temp[29, :]
+    R.W_1_1_log_abs_error = temp[30, :]
+    R.W_1_2_log_abs_error = temp[31, :]
+    R.W_1_31_log_abs_error = temp[32, :]
+    R.W_1_32_log_abs_error = temp[33, :]
+    R.W_2_1_log_abs_error = temp[34, :]
+    R.W_2_2_log_abs_error = temp[35, :]
+    R.W_2_31_log_abs_error = temp[36, :]
+    R.W_2_32_log_abs_error = temp[37, :]
+
+    error_matrix = np.vstack([
+        R.W_1_1_log_abs_error, 
+        R.W_1_2_log_abs_error, 
+        R.W_1_31_log_abs_error, 
+        R.W_2_1_log_abs_error, 
+        R.W_2_2_log_abs_error, 
+        R.W_2_32_log_abs_error
+    ])
     
-    # Error columns for Wronskian
-    errors = temp[30:36, :]
+    # Use nanmin and nanargmin to ignore NaNs during comparison
+    # If a column is ALL NaNs, these will raise a RuntimeWarning and return NaN/0
+    R.W_log_abs_error = np.nanmin(error_matrix, axis=0)
+    idx = np.nanargmin(error_matrix, axis=0)
     
-    # Vectorized minimization: find index of best method for each point i
-    min_errors = np.min(errors, axis=0)
-    best_idx = np.argmin(errors, axis=0) 
+    # 2. Apply the same selection logic as before
+    # R1 and log_abs_difference fields (Two-way split)
+    R.R1 = np.where(idx <= 2, R.R1_1, R.R1_2)
+    R.R1p = np.where(idx <= 2, R.R1p_1, R.R1p_2)
+    
+    R.R2_log_abs_difference_1_3 = np.where(idx <= 2, R.R2_log_abs_difference_1_31, R.R2_log_abs_difference_1_32)
+    R.R2p_log_abs_difference_1_3 = np.where(idx <= 2, R.R2p_log_abs_difference_1_31, R.R2p_log_abs_difference_1_32)
+    R.R2_log_abs_difference_2_3 = np.where(idx <= 2, R.R2_log_abs_difference_2_31, R.R2_log_abs_difference_2_32)
+    R.R2p_log_abs_difference_2_3 = np.where(idx <= 2, R.R2p_log_abs_difference_2_31, R.R2p_log_abs_difference_2_32)
 
-    # Pre-allocate result arrays
-    n = len(R.xi)
-    R.R1 = np.zeros(n)
-    R.R1p = np.zeros(n)
-    R.R2 = np.zeros(n)
-    R.R2p = np.zeros(n)
-    R.W_log_abs_error = min_errors
-
-    # Vectorized Selection using boolean masks (much faster than a loop)
-    # idx == 0 (Method 1), idx == 1 (Method 2)...
-    for i in range(6):
-        mask = (best_idx == i)
-        if not np.any(mask): continue
-        
-        if i < 3: # Methods 1, 2, 3 use R1_1
-            R.R1[mask] = R.R1_1[mask]
-            R.R1p[mask] = R.R1p_1[mask]
-        else:     # Methods 4, 5, 6 use R1_2
-            R.R1[mask] = R.R1_2[mask]
-            R.R1p[mask] = R.R1p_2[mask]
-            
-        # Map R2 and R2p based on the index (matching MATLAB temp logic)
-        r2_indices = [8, 10, 12, 8, 10, 14] # indices in temp for R2
-        R.R2[mask] = temp[r2_indices[i], mask]
-        R.R2p[mask] = temp[r2_indices[i]+1, mask]
-
+    # R2 and R2p (Four-way split)
+    R2_conditions = [
+        (idx == 0) | (idx == 3),  # R2_1
+        (idx == 1) | (idx == 4),  # R2_2
+        (idx == 2),               # R2_31
+        (idx == 5)                # R2_32
+    ]
+    R.R2 = np.select(R2_conditions, [R.R2_1, R.R2_2, R.R2_31, R.R2_32])
+    R.R2p = np.select(R2_conditions, [R.R2p_1, R.R2p_2, R.R2p_31, R.R2p_32])
+    
     return R
 
 def obl_save_everything(path, everything):
@@ -399,16 +425,16 @@ if __name__ == "__main__":
     # Path to the compiled solver executables
     solver_path = os.path.join(os.getcwd(), 'sphwv')
 
-    c = 10.0
-    for m in range(1):
-        for n in range(m, m+50):
-            print(f"Processing c = {c}, m = {m}, n = {n}")
-            
-            obl_calculate_everything(
-                solver_path, 2000, 500, c, m, n, 
-                -1.0, 1.0, 32768, 0.0, 8.0, 2048, 20,
-                10, -300, 10, -300, 10, -300, 10, -300
-            )
-            obl_ev = obl_load_everything('data', c, m, n)
-            obl_save_everything('saved', obl_ev)
+    for c in [10.0]:
+        for m in range(1):
+            for n in range(m, m+50):
+                print(f"Processing c = {c}, m = {m}, n = {n}")
+                
+                obl_calculate_everything(
+                    solver_path, 2000, 500, c, m, n, 
+                    1/2048, 8.0, 1/256, 17,
+                    10, -300, 10, -300, 10, -300, 10, -300
+                )
+                obl_ev = obl_load_everything('data', c, m, n)
+                obl_save_everything('saved', obl_ev)
     

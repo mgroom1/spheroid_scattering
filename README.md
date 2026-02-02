@@ -1,6 +1,8 @@
 The scattering library
 ======================
 
+M. Groom 02/02/2026: reimplementation of oblate spheroid functions in Python.
+
 Routines for computing the analytical solutions to acoustic scattering problems involving prolate spheroids, oblate spheroids, and disks.
 
 The software in this library is described in the following paper: http://scitation.aip.org/content/asa/journal/jasa/136/6/10.1121/1.4901318.

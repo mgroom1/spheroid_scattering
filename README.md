@@ -32,6 +32,7 @@ Once done, run `generate_all_figures.m`, which will generate 11 figures, saving 
 ## License ##
 
 The scattering library is Copyright (c) 2014, Ross Adelman, Nail A. Gumerov, and Ramani Duraiswami, and is released under the BSD 2-Clause License (http://opensource.org/licenses/BSD-2-Clause).
+The Python files in this repository are Copyright (c) 2026 Maks Groom and are released under the BSD 2-Clause License (http://opensource.org/licenses/BSD-2-Clause).
 
 The spheroidal library
 ======================
